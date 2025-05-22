@@ -110,3 +110,67 @@ st.info(f"💰 Total investi : {total_investi_nf:,.2f} €")
 st.warning(f"📈 Profit net estimé : {profit_nf:,.2f} €")
 
 st.line_chart(plot_evolution(montant_nf, duree_nf, frais_entree_nf, frais_gestion_nf, taux_nf, montant_initial_nf, taxe_versement=2.0, split_60=False))
+# PDF GENERATION
+st.markdown("---")
+st.markdown("## 📄 Générer un PDF récapitulatif personnalisé")
+
+nom = st.text_input("Nom du client")
+prenom = st.text_input("Prénom du client")
+produits_selectionnes = st.multiselect("Produits à inclure dans le PDF :", ["EP", "ELT", "Epargne non fiscale"])
+taux_msci = st.number_input("Taux moyen historique MSCI World (%)", 0.0, 20.0, 8.53, step=0.01)
+date_rdv = st.date_input("Date du prochain rendez-vous")
+
+if st.button("📥 Générer le PDF récapitulatif"):
+    pdf = FPDF()
+    pdf.add_page()
+    pdf.set_font("Arial", size=11)
+
+    pdf.multi_cell(0, 10, f"Bonjour {prenom} {nom},\n\nJ’espère que vous allez bien.\n")
+    pdf.multi_cell(0, 10, "Suite à notre récent entretien, au cours duquel nous avons réalisé une analyse approfondie de votre situation financière, et après évaluation par un conseiller agréé, je tiens à vous transmettre un récapitulatif des points essentiels abordés ainsi que des recommandations adaptées à vos besoins et à vos objectifs à long terme.\n")
+    pdf.multi_cell(0, 10, "Ces propositions s’inscrivent dans une approche personnalisée, en tenant compte des informations que vous nous avez communiquées, afin de vous accompagner au mieux dans l’optimisation et la protection de vos intérêts financiers.\n")
+
+    if "EP" in produits_selectionnes:
+        pdf.set_font(style="B")
+        pdf.cell(0, 10, "ÉPARGNES PENSION", ln=True)
+        pdf.set_font(style="")
+        pdf.multi_cell(0, 10, f"Montants : {montant_ep:.2f} € BRUTS")
+        pdf.multi_cell(0, 10, f"Coût net mensuel : {net_mensuel_ep:.2f} € / mois")
+        pdf.multi_cell(0, 10, f"Déductibilité : {avantage_ep:.2f} € / an")
+        pdf.multi_cell(0, 10, f"Durée de l'investissement - {duree} ans : âge terme - 67 ans")
+        pdf.multi_cell(0, 10, "Frais d'entrée : 3,00 %")
+        pdf.multi_cell(0, 10, "Frais de Gestion (annuels) : 1,90 % (EP/ELT Europe Equity AXA); 0,85 % (EP/ELT Multifunds AXA); 1,25 % (EP/ELT iShares P&V).")
+        pdf.multi_cell(0, 10, "Rendement attendu : Entre 5,00 % et 10,00 %.")
+        pdf.multi_cell(0, 10, f"Dans votre cas, nous partons d'un capital investi de {(montant_ep * 12 * duree):,.2f} € pour atteindre un montant estimé de {cap_ep:,.2f} € au terme du contrat, taxes et frais compris. L'avantage fiscal perçu représente quant à lui {total_avantage_ep:,.2f} €.\n")
+
+    if "ELT" in produits_selectionnes:
+        pdf.set_font(style="B")
+        pdf.cell(0, 10, "ÉPARGNES LONG TERME", ln=True)
+        pdf.set_font(style="")
+        pdf.multi_cell(0, 10, f"Montants : {montant_elt:.2f} € BRUTS")
+        pdf.multi_cell(0, 10, f"Coût net mensuel : {net_mensuel_elt:.2f} € / mois")
+        pdf.multi_cell(0, 10, f"Déductibilité : {avantage_elt:.2f} € / an")
+        pdf.multi_cell(0, 10, f"Durée de l'investissement - {duree} ans : âge terme - 67 ans")
+        pdf.multi_cell(0, 10, "Frais d'entrée : 3,00 %")
+        pdf.multi_cell(0, 10, "Frais de Gestion (annuels) : 1,90 %, 0,85 %, 0,85 %, 0,85 %, 1,00 %, 1,25 % selon fonds sélectionnés.")
+        pdf.multi_cell(0, 10, "Rendement attendu : Entre 5,00 % et 10,00 %.")
+        pdf.multi_cell(0, 10, f"Dans votre cas, nous partons d'un capital investi de {(montant_elt * 12 * duree):,.2f} € pour atteindre un montant estimé de {cap_elt:,.2f} € au terme du contrat, taxes et frais compris. L'avantage fiscal perçu représente quant à lui {total_avantage_elt:,.2f} €.\n")
+
+    if "Epargne non fiscale" in produits_selectionnes:
+        pdf.set_font(style="B")
+        pdf.cell(0, 10, "ÉPARGNE NON-FISCALE", ln=True)
+        pdf.set_font(style="")
+        pdf.multi_cell(0, 10, f"Montants : {montant_nf:.2f} € BRUTS")
+        pdf.multi_cell(0, 10, "Frais d'entrée : 3,00 %")
+        pdf.multi_cell(0, 10, "Frais de Gestion (annuels) : 1,25 %")
+        pdf.multi_cell(0, 10, "Rendement attendu : Entre 8,00 % et 14,00 %.")
+        pdf.multi_cell(0, 10, f"Durée de l'investissement - {duree_nf} ans : âge terme - {age + duree_nf} ans.")
+        pdf.multi_cell(0, 10, f"Dans votre cas, nous partons d'un capital investi de {total_investi_nf:,.2f} € pour atteindre un montant estimé de {cap_nf:,.2f} € au terme des {duree_nf} années, taxes et frais compris.\n")
+
+    pdf.multi_cell(0, 10, f"Je vous rappelle que ces calculs ont été réalisés sur base d'un rendement fictif de {taux_msci:.2f} %. Sur une période d'environ 30 ans, il convient plutôt d'envisager un rendement final de l'ordre de 5,00 % à 10,00 %, ces 37 dernières années le rendement étant de 8,53 % en moyenne par an (MSCI World Index).\n")
+    pdf.multi_cell(0, 10, f"POUR NOTRE PROCHAIN RENDEZ-VOUS : {date_rdv.strftime('%A %d %B %Y')}")
+
+    file_name = f"recommandations_{prenom}_{nom}.pdf"
+    pdf.output(f"/mnt/data/{file_name}")
+    st.success("📄 PDF généré avec succès !")
+    with open(f"/mnt/data/{file_name}", "rb") as f:
+        st.download_button("📥 Télécharger le PDF", f, file_name=file_name)
